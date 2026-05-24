@@ -15,17 +15,17 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      // Cari username dan password yang cocok di tabel kasir, sertakan data cabang
-      const { data, error: fetchError } = await supabase
-        .from("kasir")
-        .select(`*, cabang:cabang_id(*)`)
-        .eq("username", username)
-        .eq("password", password)
-        .single();
+      // Gunakan RPC secure_login untuk memverifikasi password yang sudah di-hash
+      const { data: rpcData, error: fetchError } = await supabase.rpc('secure_login', {
+        p_username: username,
+        p_password: password
+      });
 
-      if (fetchError || !data) {
-        throw new Error("Username atau Password salah!");
+      if (fetchError || !rpcData || rpcData.length === 0 || !rpcData[0].success) {
+        throw new Error(rpcData?.[0]?.message || "Username atau Password salah!");
       }
+
+      const data = rpcData[0].kasir_data;
 
       // Berhasil login
       login(data);
