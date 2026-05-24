@@ -10,13 +10,7 @@ export default function ReceiptModal({
   if (!isOpen || !transaksi) return null;
 
   const handlePrint = () => {
-    const printContent = document.getElementById("receipt-print-area");
-    const originalContents = document.body.innerHTML;
-    
-    document.body.innerHTML = printContent.innerHTML;
     window.print();
-    document.body.innerHTML = originalContents;
-    window.location.reload();
   };
 
   const metodeLabel =
@@ -47,7 +41,7 @@ export default function ReceiptModal({
   return (
     <>
       {/* ── PRINT AREA (hidden on screen) ── */}
-      <div id="receipt-print-area" style={{ display: "none" }}>
+      <div id="receipt-print-area" className="print-only hidden">
         <div style={{ 
           fontFamily: "'Courier New', monospace", 
           fontSize: "12px", 
@@ -145,10 +139,28 @@ export default function ReceiptModal({
               <span>{transaksi.namaKasir}</span>
             </div>
             {transaksi.pelanggan && (
-              <div style={{ display: "flex", justifyContent: "space-between", margin: "4px 0" }}>
-                <span>Pelanggan</span>
-                <span>{transaksi.pelanggan.nama}</span>
-              </div>
+              <>
+                <div style={{ display: "flex", justifyContent: "space-between", margin: "4px 0" }}>
+                  <span>Pelanggan</span>
+                  <span>{transaksi.pelanggan.nama}</span>
+                </div>
+                {transaksi.poin_didapat > 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", margin: "4px 0" }}>
+                    <span>Poin Didapat</span>
+                    <span>+{transaksi.poin_didapat}</span>
+                  </div>
+                )}
+                {transaksi.poin_dipakai > 0 && (
+                  <div style={{ display: "flex", justifyContent: "space-between", margin: "4px 0" }}>
+                    <span>Poin Dipakai</span>
+                    <span>-{transaksi.poin_dipakai}</span>
+                  </div>
+                )}
+                <div style={{ display: "flex", justifyContent: "space-between", margin: "4px 0" }}>
+                  <span>Sisa Poin</span>
+                  <span>{Number(transaksi.pelanggan.point) + Number(transaksi.poin_didapat || 0) - Number(transaksi.poin_dipakai || 0)}</span>
+                </div>
+              </>
             )}
             {transaksi.namaCabang && (
               <div style={{ display: "flex", justifyContent: "space-between", margin: "4px 0" }}>
@@ -237,7 +249,14 @@ export default function ReceiptModal({
                   <div className="flex justify-between font-semibold text-[#0b573a]"><span>Kembalian</span><span>{rupiah(transaksi.kembalian)}</span></div>
                 </>)}
                 <div className="flex justify-between border-t border-gray-200 pt-1.5 mt-1.5"><span>Kasir</span><span>{transaksi.namaKasir}</span></div>
-                {transaksi.pelanggan && <div className="flex justify-between"><span>Pelanggan</span><span className="font-medium text-[#0b573a]">{transaksi.pelanggan.nama}</span></div>}
+                {transaksi.pelanggan && (
+                  <>
+                    <div className="flex justify-between"><span>Pelanggan</span><span className="font-medium text-[#0b573a]">{transaksi.pelanggan.nama}</span></div>
+                    {transaksi.poin_didapat > 0 && <div className="flex justify-between"><span>Poin Didapat</span><span className="font-medium text-[#0b573a]">+{transaksi.poin_didapat}</span></div>}
+                    {transaksi.poin_dipakai > 0 && <div className="flex justify-between"><span>Poin Dipakai</span><span className="font-medium text-red-600">-{transaksi.poin_dipakai}</span></div>}
+                    <div className="flex justify-between"><span>Total Poin</span><span className="font-bold text-[#0b573a]">{Number(transaksi.pelanggan.point) + Number(transaksi.poin_didapat || 0) - Number(transaksi.poin_dipakai || 0)}</span></div>
+                  </>
+                )}
                 {transaksi.namaCabang && <div className="flex justify-between"><span>Cabang</span><span className="font-medium">{transaksi.namaCabang}</span></div>}
               </div>
             </div>

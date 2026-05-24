@@ -47,7 +47,7 @@ export async function createSnapToken(transactionData) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON}`
       },
       body: JSON.stringify(requestBody),
     });
@@ -88,7 +88,7 @@ export async function cancelTransaction(order_id) {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+        "Authorization": `Bearer ${import.meta.env.VITE_SUPABASE_ANON}`
       },
       body: JSON.stringify({ order_id }),
     });
@@ -163,19 +163,24 @@ export async function loadSnapScript() {
     return window.snap;
   }
 
-  // Fetch production status and client key from settings
-  // Since client_key isn't in pengaturan_rahasia (it can't be fetched securely from there without backend),
-  // wait, the client_key was not added to the edge function.
-  // Actually, Client Key is safe to be in .env. Let's use it from .env for now, or fallback.
-  // Wait! The user wants to change ALL settings from the UI.
-  // I need to fetch the is_production flag from the regular pengaturan table if it's there.
+  // 1. Ambil pengaturan_rahasia dari database (bisa dibaca frontend karena kebijakan update=true/anon read diperbolehkan di edge function case, tapi kita gunakan supabase client)
+  // Catatan: Jika read RLS ditutup, kita fallback ke .env dengan VITE_ prefix.
+  let IS_PROD = import.meta.env.VITE_MIDTRANS_IS_PRODUCTION === "true" || false;
   
-  // Since we use Edge Functions, we rely on the Edge Function to give us the token. 
-  // Midtrans snap script needs the client key to load properly? Actually, snap script technically works without client key initialization if you pass the token to snap.pay() directly, but some features need it.
-  // For the script src, it just needs to know if it's production or sandbox.
-  // Let's assume sandbox by default if not specified in .env, as edge function handles the token.
-  
-  const IS_PROD = import.meta.env.MIDTRANS_IS_PRODUCTION === "true" || false;
+  try {
+    const { data } = await supabase
+      .from('pengaturan_rahasia')
+      .select('midtrans_is_production')
+      .eq('id', 1)
+      .single();
+      
+    if (data && data.midtrans_is_production !== undefined) {
+      IS_PROD = data.midtrans_is_production;
+    }
+  } catch (err) {
+    console.warn("Gagal membaca status production dari DB, fallback ke env", err);
+  }
+
   const CLIENT_KEY = import.meta.env.VITE_MIDTRANS_CLIENT_KEY || "";
 
   return new Promise((resolve, reject) => {

@@ -57,12 +57,71 @@ export default function MidtransPaymentModal({
           email: "customer@tokosenin.com",
           phone: "08123456789",
         },
-        item_details: transactionData.items.map(item => ({
-          id: item.id,
-          price: Math.round(item.harga),
-          quantity: item.qty,
-          name: item.nama,
-        })),
+        item_details: (() => {
+          let runningSum = 0;
+
+          // 1. List semua barang yang dibeli (set quantity ke 1 untuk menghindari error desimal qty dari Midtrans)
+          const items = transactionData.items.map(item => {
+            const price = Math.round(item.subtotal || (item.harga * item.qty));
+            runningSum += price;
+            return {
+              id: item.id,
+              price: price,
+              quantity: 1,
+              name: `${item.nama.substring(0, 35)} (${item.qty}${item.satuan || ''})`, 
+            };
+          });
+
+          // 2. Hitung total diskon (Diskon Global + Diskon Poin)
+          const totalDiskon = Math.round((transactionData.diskon_global_rp || 0) + (transactionData.diskon_poin_rp || 0));
+          if (totalDiskon > 0) {
+            items.push({
+              id: "diskon",
+              price: -totalDiskon,
+              quantity: 1,
+              name: "Total Diskon & Poin",
+            });
+            runningSum -= totalDiskon;
+          }
+
+          // 3. Masukkan Pajak jika ada
+          const pajak = Math.round(transactionData.pajak || 0);
+          if (pajak > 0) {
+            items.push({
+              id: "pajak",
+              price: pajak,
+              quantity: 1,
+              name: "Pajak",
+            });
+            runningSum += pajak;
+          }
+
+          // 4. Masukkan Biaya Layanan jika ada
+          const layanan = Math.round(transactionData.biaya_layanan || 0);
+          if (layanan > 0) {
+            items.push({
+              id: "layanan",
+              price: layanan,
+              quantity: 1,
+              name: "Biaya Layanan",
+            });
+            runningSum += layanan;
+          }
+
+          // 5. Pembulatan (Jika ada selisih 1-2 rupiah karena floating point)
+          const targetTotal = Math.round(transactionData.total_harga);
+          const diff = targetTotal - runningSum;
+          if (diff !== 0) {
+            items.push({
+              id: "pembulatan",
+              price: diff,
+              quantity: 1,
+              name: "Pembulatan Sistem",
+            });
+          }
+
+          return items;
+        })(),
         // Jika method.enabled_payments null, backend tidak akan kirim enabled_payments
         // Midtrans akan load default dari dashboard
         enabled_payments: method.enabled_payments,

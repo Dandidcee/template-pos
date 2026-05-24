@@ -654,16 +654,7 @@ export default function KasirPage() {
 
   // ── Print Struk ──
   const handlePrintStruk = () => {
-    if (!lastTx) return;
-    
-    const printContent = document.getElementById("success-receipt-print-area");
-    if (!printContent) return;
-    
-    const originalContents = document.body.innerHTML;
-    document.body.innerHTML = printContent.innerHTML;
     window.print();
-    document.body.innerHTML = originalContents;
-    window.location.reload();
   };
 
   // ── Close Success Modal dan Reset ──
@@ -1298,11 +1289,11 @@ export default function KasirPage() {
                     <div className="flex items-center gap-1">
                       {selectedPelanggan && (
                         <button type="button" onClick={(e) => { e.stopPropagation(); setSelectedPelanggan(null); setGunakanPoin(false); }}
-                          className="w-5 h-5 rounded-full bg-outline/30 flex items-center justify-center hover:bg-error hover:text-on-error transition-colors">
-                          <span className="material-symbols-outlined text-[12px]">close</span>
+                          className="w-7 h-7 rounded-md bg-surface-container-high text-on-surface-variant flex items-center justify-center hover:bg-error-container hover:text-on-error-container transition-all shadow-sm">
+                          <span className="material-symbols-outlined text-[16px]">close</span>
                         </button>
                       )}
-                      <span className="material-symbols-outlined text-outline text-[20px]" style={{ transform: pelangganOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>expand_more</span>
+                      <span className="material-symbols-outlined text-outline text-[20px] ml-1" style={{ transform: pelangganOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>expand_more</span>
                     </div>
                   </div>
                   {pelangganOpen && (
@@ -1327,7 +1318,13 @@ export default function KasirPage() {
                                 <p className="text-label-md font-medium">{p.nama}</p>
                                 <p className="text-label-sm text-on-surface-variant">{p.no_hp || '-'}</p>
                               </div>
-                              <span className="text-label-sm font-bold text-primary bg-primary-container px-2 py-0.5 rounded-full">{Number(p.point).toLocaleString('id-ID')} poin</span>
+                              <span className={`text-label-sm font-bold px-2 py-0.5 rounded-md border ${
+                                Number(p.point) > 0 
+                                  ? 'bg-primary-container text-on-primary-container border-transparent' 
+                                  : 'bg-surface-container-highest text-on-surface-variant border-outline-variant/30'
+                              }`}>
+                                {Number(p.point).toLocaleString('id-ID')} poin
+                              </span>
                             </div>
                           ))
                         }
@@ -1455,7 +1452,7 @@ export default function KasirPage() {
 
       {/* ── PRINT AREA untuk Success Modal (hidden on screen) ── */}
       {lastTx && (
-        <div id="success-receipt-print-area" style={{ display: "none" }}>
+        <div id="success-receipt-print-area" className="print-only hidden">
           <div style={{ 
             fontFamily: "'Courier New', monospace", 
             fontSize: "12px", 

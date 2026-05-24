@@ -98,3 +98,28 @@ input[type=number] { -moz-appearance: textfield; }
     height: -webkit-fill-available;
   }
 }
+
+/* Print Styles */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-only {
+    display: block !important;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    visibility: visible;
+  }
+  .print-only * {
+    visibility: visible;
+  }
+  body {
+    background-color: white;
+    margin: 0;
+    padding: 0;
+  }
+}
