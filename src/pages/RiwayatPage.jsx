@@ -83,7 +83,7 @@ export default function RiwayatPage() {
       setLoading(true);
       let query = supabase
         .from("transaksi")
-        .select("*")
+        .select("*, pelanggan:pelanggan_id(*)")
         .order("created_at", { ascending: false })
         .limit(50);
 

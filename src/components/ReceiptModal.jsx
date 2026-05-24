@@ -144,6 +144,12 @@ export default function ReceiptModal({
               <span>Kasir</span>
               <span>{transaksi.namaKasir}</span>
             </div>
+            {transaksi.pelanggan && (
+              <div style={{ display: "flex", justifyContent: "space-between", margin: "4px 0" }}>
+                <span>Pelanggan</span>
+                <span>{transaksi.pelanggan.nama}</span>
+              </div>
+            )}
             {transaksi.namaCabang && (
               <div style={{ display: "flex", justifyContent: "space-between", margin: "4px 0" }}>
                 <span>Cabang</span>
@@ -231,6 +237,7 @@ export default function ReceiptModal({
                   <div className="flex justify-between font-semibold text-[#0b573a]"><span>Kembalian</span><span>{rupiah(transaksi.kembalian)}</span></div>
                 </>)}
                 <div className="flex justify-between border-t border-gray-200 pt-1.5 mt-1.5"><span>Kasir</span><span>{transaksi.namaKasir}</span></div>
+                {transaksi.pelanggan && <div className="flex justify-between"><span>Pelanggan</span><span className="font-medium text-[#0b573a]">{transaksi.pelanggan.nama}</span></div>}
                 {transaksi.namaCabang && <div className="flex justify-between"><span>Cabang</span><span className="font-medium">{transaksi.namaCabang}</span></div>}
               </div>
             </div>
