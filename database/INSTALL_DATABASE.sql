@@ -452,6 +452,7 @@ RETURNS TABLE (
 ) AS $$
 DECLARE
   v_kasir RECORD;
+  v_kasir_json JSONB;
 BEGIN
   -- Cari kasir berdasarkan username
   SELECT * INTO v_kasir
@@ -477,18 +478,18 @@ BEGIN
   END IF;
   
   -- Login berhasil - ambil data lengkap dengan cabang
-  SELECT row_to_json(k.*) INTO v_kasir
+  SELECT to_jsonb(k.*) INTO v_kasir_json
   FROM (
     SELECT 
-      kasir.*,
-      row_to_json(cabang.*) AS cabang
+      kasir.id, kasir.username, kasir.nama_lengkap, kasir.role, kasir.cabang_id, kasir.created_at, kasir.updated_at,
+      to_jsonb(cabang.*) AS cabang
     FROM kasir
     LEFT JOIN cabang ON kasir.cabang_id = cabang.id
     WHERE kasir.username = p_username
   ) k;
   
   RETURN QUERY SELECT 
-    v_kasir::JSONB,
+    v_kasir_json,
     TRUE,
     'Login berhasil'::TEXT;
 END;
