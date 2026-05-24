@@ -59,7 +59,7 @@ export default function ManajemenPelangganPage() {
       setShowModal(false);
     } catch (err) {
       console.error(err);
-      alert("Gagal menyimpan data");
+      alert("Gagal menyimpan data: " + (err.message || "Kesalahan tidak diketahui"));
     } finally {
       setSaving(false);
     }
